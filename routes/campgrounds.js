@@ -2,17 +2,34 @@ var express= require("express");
 var router = express.Router();
 var Campground = require("../models/campground");
 var middleWare = require("../middleware");
+const { text } = require("body-parser");
 
 //INDEX - SHOW ALL CAMPGROUNDS
 router.get("/",function(req,res){
-    //Get all campgrounds from DB
-    Campground.find({}, function(err,allcampgrounds){
-        if(err)
-        console.log(err);
-        else{
-            res.render("campgrounds/index",{campgrounds:allcampgrounds, page: "campgrounds"});
-        }
-    });
+    var noMatch=null;
+    if(req.query.search) {
+        const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+        Campground.find({name: regex}, function(err,allcampgrounds){
+            if(err)
+            console.log(err);
+            else{
+                
+                if(allcampgrounds.length<1) {
+                    noMatch = "No campgrounds match that query, please try again.";
+                }
+                res.render("campgrounds/index",{campgrounds:allcampgrounds, page: "campgrounds",noMatch: noMatch});
+            }
+        });
+    } else {
+        //Get all campgrounds from DB
+        Campground.find({}, function(err,allcampgrounds){
+            if(err)
+            console.log(err);
+            else{
+                res.render("campgrounds/index",{campgrounds:allcampgrounds, page: "campgrounds",noMatch: noMatch});
+            }
+        });
+    }
 });
 
 // CREATE - ADD NEW CAMPGROUND TO DB
@@ -94,7 +111,11 @@ router.delete("/:id",middleWare.checkCampgroundOwnership ,function(req, res){
             res.redirect("/campgrounds");
         }
     })
-})
+});
+
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
 
 
 module.exports = router;
