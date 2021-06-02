@@ -7,6 +7,10 @@ router.get("/",function(res,res){
     res.render("landing");
 });
 
+// SHOW - ABOUT PAGE
+router.get("/about", function(req, res){
+    res.render("about", {page: "about"});
+})
 
 router.get("/register", function(req, res){
     res.render("register", {page: "register"});
